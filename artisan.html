@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtisanAura | Handmade Products Marketplace</title>
+    <style>
+        /* ==========================================
+           1. CSS VARIABLES & GLOBAL STYLING
+           Aesthetic beige & terracotta color palette
+        ========================================== */
+        :root {
+            --bg-beige: #f9f6f0;
+            --card-bg: #ffffff;
+            --accent-terracotta: #b87355;
+            --accent-terracotta-dark: #9a5b3f;
+            --text-main: #2d2420;
+            --text-muted: #75675d;
+            --border-color: #e5ded5;
+            --nav-bg: #2d2420;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-beige);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ==========================================
+           2. NAVIGATION BAR
+        ========================================== */
+        .navbar {
+            background-color: var(--nav-bg);
+            color: white;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .navbar h2 {
+            font-size: 22px;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 22px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar-links a {
+            color: #f7f1e8;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .navbar-links a:hover {
+            color: var(--accent-terracotta);
+        }
+
+        .cart-btn {
+            background-color: var(--accent-terracotta);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .cart-btn:hover { background-color: var(--accent-terracotta-dark); }
+
+        /* ==========================================
+           3. PAGE MANAGEMENT SYSTEM
+        ========================================== */
+        .page {
+            display: none;
+            padding: 40px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+
+        .page.active { display: block; }
+
+        /* ==========================================
+           4. HOME PAGE STYLES
+        ========================================== */
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            background: linear-gradient(rgba(249, 246, 240, 0.9), rgba(249, 246, 240, 0.9)), 
+                        url('https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+
+        .welcome-tag {
+            color: var(--accent-terracotta);
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .hero-section h1 {
+            font-size: 46px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .hero-section p {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto 25px auto;
+        }
+
+        .cta-button {
+            background-color: var(--accent-terracotta);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .cta-button:hover { background-color: var(--accent-terracotta-dark); }
+
+        .section-title {
+            font-size: 24px;
+            margin: 30px 0 20px 0;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        /* ==========================================
+           5. SHOP MARKETPLACE STYLES
+        ========================================== */
+        .shop-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 7px 14px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: 0.3s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background-color: var(--accent-terracotta);
+            color: white;
+            border-color: var(--accent-terracotta);
+        }
+
+        .search-sort-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input, .sort-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            font-size: 13px;
+            background-color: white;
+            outline: none;
+        }
+
+        .search-input { width: 200px; }
+
+        .category-group-title {
+            font-size: 20px;
+            color: var(--accent-terracotta);
+            margin: 35px 0 15px 0;
+            font-weight: 600;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 22px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(45, 36, 32, 0.08);
+        }
+
+        .product-img-container {
+            width: 100%;
+            height: 190px;
+            overflow: hidden;
+            background-color: #eae3d9;
+            cursor: pointer;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover .product-img { transform: scale(1.04); }
+
+        .product-info {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .product-category {
+            font-size: 11px;
+            color: var(--accent-terracotta);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+
+        .product-title:hover { color: var(--accent-terracotta); }
+
+        .product-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-price {
+            font-size: 17px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--text-main);
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.3s;
+        }
+
+        .add-to-cart-btn:hover { background-color: var(--accent-terracotta); }
+
+        /* ==========================================
+           6. ARTISAN REGISTRATION FORM
+        ========================================== */
+        .form-container {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 650px;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #fdfbf7;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--accent-terracotta);
+        }
+
+        /* ==========================================
+           7. RETURN POLICY & ACCOUNT PAGES
+        ========================================== */
+        .policy-content, .account-content {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .policy-content h3 { color: var(--accent-terracotta); margin: 20px 0 8px 0; }
+        .policy-content p, .policy-content li { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+
+        /* ==========================================
+           8. CART SIDEBAR & MODALS
+        ========================================== */
+        .cart-modal {
+            position: fixed;
+            top: 0; right: -380px;
+            width: 360px; height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.15);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease-in-out;
+        }
+        .cart-modal.open { right: 0; }
+
+        .cart-header {
+            padding: 18px;
+            background-color: var(--nav-bg);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+        .cart-body { padding: 18px; flex-grow: 1; overflow-y: auto; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        
+        .cart-footer { padding: 18px; background-color: #f9f6f0; border-top: 1px solid var(--border-color); }
+        .cart-total { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; margin-bottom: 12px; }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: none; z-index: 1500;
+        }
+        .overlay.active { display: block; }
+
+        /* Toast Popup Notification */
+        #toast {
+            position: fixed; bottom: 25px; left: 50%;
+            transform: translateX(-50%) translateY(90px);
+            background-color: var(--text-main); color: white;
+            padding: 10px 22px; border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease; z-index: 3000; font-size: 13px;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        @media(max-width: 768px) {
+            .navbar { padding: 14px 20px; flex-direction: column; gap: 10px; }
+            .shop-controls { flex-direction: column; align-items: stretch; }
+            .search-input { width: 100%; }
+            .cart-modal { width: 100%; right: -100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================
+       NAVIGATION BAR HTML
+    ========================================== -->
+    <nav class="navbar">
+        <h2 onclick="switchPage('home')">ArtisanAura 🏺</h2>
+        <div class="navbar-links">
+            <a href="#" onclick="switchPage('home')">Home</a>
+            <a href="#" onclick="switchPage('shop')">Shop Marketplace</a>
+            <a href="#" onclick="switchPage('register')">Join as Artisan</a>
+            <a href="#" onclick="switchPage('policy')">Return Policy</a>
+            <a href="#" onclick="switchPage('account')" id="nav-account-link">Sign In</a>
+            <button class="cart-btn" onclick="toggleCart()">
+                🛒 Cart (<span id="cart-count">0</span>)
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==========================================
+       1. HOME PAGE VIEW
+    ========================================== -->
+    <div id="home-page" class="page active">
+        <div class="hero-section">
+            <p class="welcome-tag">Handmade with Heritage & Soul</p>
+            <h1>Discover Unique Artisanal Treasures</h1>
+            <p>Support independent creators and small-batch makers worldwide. Explore authentic pottery, handmade jewelry, and organic home decor.</p>
+            <button class="cta-button" onclick="switchPage('shop')">Explore Marketplace</button>
+        </div>
+
+        <h2 class="section-title">Featured Masterpieces</h2>
+        <div class="products-grid" id="featured-grid"></div>
+    </div>
+
+    <!-- ==========================================
+       2. SHOPPING MARKETPLACE VIEW (Divided Sections)
+    ========================================== -->
+    <div id="shop-page" class="page">
+        <h2 class="section-title">The Artisan Marketplace</h2>
+        
+        <div class="shop-controls">
+            <div class="filter-container">
+                <button class="filter-btn active" onclick="filterCategory('All', this)">All Items</button>
+                <button class="filter-btn" onclick="filterCategory('Pots & Ceramics', this)">Pots & Ceramics</button>
+                <button class="filter-btn" onclick="filterCategory('Jewelry', this)">Jewelry</button>
+                <button class="filter-btn" onclick="filterCategory('Home Decor', this)">Home Decor</button>
+                <button class="filter-btn" onclick="filterCategory('Textiles', this)">Textiles</button>
+            </div>
+            <div class="search-sort-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search creations..." onkeyup="handleSearch()">
+                <select id="sortSelect" class="sort-select" onchange="handleSort()">
+                    <option value="default">Sort by</option>
+                    <option value="low-high">Price: Low to High</option>
+                    <option value="high-low">Price: High to Low</option>
+                    <option value="name">Name: A-Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Rendered dynamically divided by categories -->
+        <div id="market-content"></div>
+    </div>
+
+    <!-- ==========================================
+       3. ARTISAN REGISTRATION VIEW
+    ========================================== -->
+    <div id="register-page" class="page">
+        <h2 class="section-title" style="text-align: center;">Join as a Small Artisan</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">List your handmade items on ArtisanAura and reach buyers globally.</p>
+        
+        <div class="form-container">
+            <form id="artisanForm" onsubmit="handleArtisanSubmit(event)">
+                <div class="form-group">
+                    <label>Artisan / Brand Name</label>
+                    <input type="text" id="artisanName" placeholder="e.g., ClayCraft Studio" required>
+                </div>
+                <div class="form-group">
+                    <label>Product Title</label>
+                    <input type="text" id="prodTitle" placeholder="e.g., Handcrafted Ceramic Teapot" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="prodCategory" required>
+                        <option value="Pots & Ceramics">Pots & Ceramics</option>
+                        <option value="Jewelry">Jewelry</option>
+                        <option value="Home Decor">Home Decor</option>
+                        <option value="Textiles">Textiles</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="prodPrice" placeholder="950" required>
+                </div>
+                <div class="form-group">
+                    <label>Image URL (Unsplash or direct link)</label>
+                    <input type="url" id="prodImg" placeholder="https://images.unsplash.com/..." required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="prodDesc" rows="3" placeholder="Tell the story of how this product was made..." required></textarea>
+                </div>
+                <button type="submit" class="cta-button" style="width: 100%;">Submit Product to Marketplace</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       4. RETURN POLICY VIEW
+    ========================================== -->
+    <div id="policy-page" class="page">
+        <h2 class="section-title" style="text-align: center;">Return & Refund Policy</h2>
+        <div class="policy-content">
+            <h3>1. Handmade Variations</h3>
+            <p>Because every product on ArtisanAura is individually handcrafted by small independent artisans, slight variations in color, texture, shape, and finish are natural characteristics and signs of authentic craftsmanship.</p>
+            
+            <h3>2. Returns & Replacements</h3>
+            <p>We accept return requests within <strong>7 days of delivery</strong> only if the item received is severely damaged, defective, or incorrect.</p>
+            <ul>
+                <li>Items must be unused and returned in their original packaging.</li>
+                <li>Custom-made or personalized artisan orders cannot be returned unless damaged upon arrival.</li>
+            </ul>
+
+            <h3>3. Refund Processing</h3>
+            <p>Once your return is inspected and approved by our quality team, refunds will be issued to your original method of payment within 5-7 business days.</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       5. USER ACCOUNT VIEW (Sign In / Sign Up)
+    ========================================== -->
+    <div id="account-page" class="page">
+        <h2 class="section-title" style="text-align: center;">User Account Portal</h2>
+        <div class="account-content" style="max-width: 450px;">
+            <div id="auth-form-container">
+                <h3 id="auth-title" style="margin-bottom: 20px; text-align: center;">Sign In to ArtisanAura</h3>
+                <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                    <div class="form-group" id="nameFieldGroup" style="display: none;">
+                        <label>Full Name</label>
+                        <input type="text" id="authName" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="authEmail" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="authPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="cta-button" id="authSubmitBtn" style="width: 100%; margin-bottom: 12px;">Sign In</button>
+                    <p style="text-align: center; font-size: 13px; color: var(--text-muted); cursor: pointer;" onclick="toggleAuthMode()">
+                        <span id="authToggleText">Don't have an account? Sign Up</span>
+                    </p>
+                </form>
+            </div>
+            <div id="user-profile-container" style="display: none; text-align: center;">
+                <h3 id="welcomeUser" style="margin-bottom: 15px;"></h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">You are successfully logged into your ArtisanAura buyer profile.</p>
+                <button class="cta-button" onclick="handleLogout()" style="background-color: #c94a4a;">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       CART SIDEBAR MODAL
+    ========================================== -->
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-header">
+            <h3>Your Shopping Cart</h3>
+            <button class="close-btn" onclick="toggleCart()">&times;</button>
+        </div>
+        <div class="cart-body" id="cart-items-container">
+            <p style="text-align: center; color: var(--text-muted); margin-top: 40px;">Your cart is empty.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">₹0</span>
+            </div>
+            <button class="cta-button" onclick="checkout()" style="width: 100%;">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast">Notification message</div>
+
+    <!-- ==========================================
+       JAVASCRIPT LOGIC & EXPLAINABLE FUNCTIONS
+    ========================================== -->
+    <script>
+        // Initial 16 Marketplace Products Database
+        let products = [
+            { id: 1, name: "Terracotta Planter", category: "Pots & Ceramics", price: 650, desc: "Hand-thrown clay pot with geometric earthy carving.", image: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80" },
+            { id: 2, name: "Glazed Ceramic Mug", category: "Pots & Ceramics", price: 450, desc: "Matte beige coffee mug with comfortable ergonomic grip.", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80" },
+            { id: 3, name: "Hand-Painted Vase", category: "Pots & Ceramics", price: 1200, desc: "Statement decorative ceramic vase painted by local artisans.", image: "https://images.unsplash.com/photo-1612196808214-b8e1a6145a5c?auto=format&fit=crop&w=600&q=80" },
+            { id: 4, name: "Stoneware Dinner Set", category: "Pots & Ceramics", price: 1800, desc: "Set of 4 speckled dinner plates fired at high heat.", image: "https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=600&q=80" },
+            { id: 5, name: "Minimalist Stoneware Bowl", category: "Pots & Ceramics", price: 550, desc: "Ideal for soups, ramen, or morning cereal bowls.", image: "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=600&q=80" },
+            
+            { id: 6, name: "Brass Drop Earrings", category: "Jewelry", price: 890, desc: "Hand-hammered brass geometric drop earrings.", image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80" },
+            { id: 7, name: "Beaded Boho Necklace", category: "Jewelry", price: 750, desc: "Natural gemstone beads crafted on durable silk cord.", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80" },
+            { id: 8, name: "Silver Hammered Ring", category: "Jewelry", price: 1100, desc: "Adjustable sterling silver band with unique texture.", image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=600&q=80" },
+            { id: 9, name: "Fabric Wrapped Bangle", category: "Jewelry", price: 350, desc: "Eco-friendly fabric-wrapped statement bracelet.", image: "https://images.unsplash.com/photo-1611591475249-1ef017122a27?auto=format&fit=crop&w=600&q=80" },
+
+            { id: 10, name: "Macrame Wall Hanging", category: "Home Decor", price: 1400, desc: "Intricate cotton cord wall tapestry for cozy vibes.", image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=600&q=80" },
+            { id: 11, name: "Soy Wax Scented Candle", category: "Home Decor", price: 600, desc: "Hand-poured vanilla and sandalwood soy candle.", image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80" },
+            { id: 12, name: "Rattan Woven Basket", category: "Home Decor", price: 1350, desc: "Sustainable natural wicker storage basket.", image: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=600&q=80" },
+            { id: 13, name: "Wooden Carved Coasters", category: "Home Decor", price: 490, desc: "Set of 6 rustic mango wood coasters with holder.", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80" },
+
+            { id: 14, name: "Block Print Table Runner", category: "Textiles", price: 950, desc: "Hand-carved wooden block print on organic cotton.", image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=80" },
+            { id: 15, name: "Hand-knitted Throw Blanket", category: "Textiles", price: 2400, desc: "Chunky knit woolen blanket for chilly evenings.", image: "https://images.unsplash.com/photo-1580301762415-e0e3c6d28994?auto=format&fit=crop&w=600&q=80" },
+            { id: 16, name: "Embroidered Linen Cushion", category: "Textiles", price: 800, desc: "Hand-stitched botanical floral embroidery.", image: "https://images.unsplash.com/photo-1579656381226-5fc0f0100c3b?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        let cart = [];
+        let activeCategory = 'All';
+        let isSignUpMode = false;
+        let currentUser = null;
+
+        // 1. Page Switcher Function (DOM manipulation)
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            if (pageId === 'home') {
+                document.getElementById('home-page').classList.add('active');
+                renderFeatured();
+            } else if (pageId === 'shop') {
+                document.getElementById('shop-page').classList.add('active');
+                renderMarketplace(products);
+            } else if (pageId === 'register') {
+                document.getElementById('register-page').classList.add('active');
+            } else if (pageId === 'policy') {
+                document.getElementById('policy-page').classList.add('active');
+            } else if (pageId === 'account') {
+                document.getElementById('account-page').classList.add('active');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        // 2. Render Featured Items on Home Page
+        function renderFeatured() {
+            const grid = document.getElementById('featured-grid');
+            grid.innerHTML = products.slice(0, 4).map(p => createCardHTML(p)).join('');
+        }
+
+        // 3. Render Marketplace Divided into Sections by Category
+        function renderMarketplace(items) {
+            const container = document.getElementById('market-content');
+            
+            if (items.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding: 40px;">No handmade creations found.</p>`;
+                return;
+            }
+
+            if (activeCategory !== 'All') {
+                // If a specific category filter is clicked
+                container.innerHTML = `
+                    <h3 class="category-group-title">${activeCategory}</h3>
+                    <div class="products-grid">${items.map(p => createCardHTML(p)).join('')}</div>
+                `;
+                return;
+            }
+
+            // Otherwise, divide into multiple categorized sections
+            const categories = ["Pots & Ceramics", "Jewelry", "Home Decor", "Textiles"];
+            let htmlContent = "";
+
+            categories.forEach(cat => {
+                const catItems = items.filter(p => p.category === cat);
+                if (catItems.length > 0) {
+                    htmlContent += `
+                        <h3 class="category-group-title">${cat}</h3>
+                        <div class="products-grid">
+                            ${catItems.map(p => createCardHTML(p)).join('')}
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
+        function createCardHTML(p) {
+            return `
+                <div class="product-card">
+                    <div class="product-img-container">
+                        <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+                    </div>
+                    <div class="product-info">
+                        <div>
+                            <span class="product-category">${p.category}</span>
+                            <h3 class="product-title">${p.name}</h3>
+                            <p class="product-desc">${p.desc}</p>
+                        </div>
+                        <div class="product-footer">
+                            <span class="product-price">₹${p.price}</span>
+                            <button class="add-to-cart-btn" onclick="addToCart(${p.id})">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 4. Filtering, Searching, and Sorting Logic
+        function filterCategory(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = category;
+            applyFiltersAndSort();
+        }
+
+        function handleSearch() { applyFiltersAndSort(); }
+        function handleSort() { applyFiltersAndSort(); }
+
+        function applyFiltersAndSort() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const sortVal = document.getElementById('sortSelect').value;
+
+            let result = activeCategory === 'All' 
+                ? [...products] 
+                : products.filter(p => p.category === activeCategory);
+
+            if (query) {
+                result = result.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+            }
+
+            if (sortVal === 'low-high') result.sort((a, b) => a.price - b.price);
+            else if (sortVal === 'high-low') result.sort((a, b) => b.price - a.price);
+            else if (sortVal === 'name') result.sort((a, b) => a.name.localeCompare(b.name));
+
+            renderMarketplace(result);
+        }
+
+        // 5. Artisan Registration Form Submission handler
+        function handleArtisanSubmit(e) {
+            e.preventDefault();
+            const newProduct = {
+                id: products.length + 1,
+                name: document.getElementById('prodTitle').value,
+                category: document.getElementById('prodCategory').value,
+                price: Number(document.getElementById('prodPrice').value),
+                image: document.getElementById('prodImg').value,
+                desc: document.getElementById('prodDesc').value
+            };
+
+            products.unshift(newProduct); // Add to beginning of array
+            showToast("Product listed successfully!");
+            document.getElementById('artisanForm').reset();
+            switchPage('shop');
+        }
+
+        // 6. User Account Sign-in / Sign-up Handler
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').innerText = isSignUpMode ? "Create an Account" : "Sign In to ArtisanAura";
+            document.getElementById('authSubmitBtn').innerText = isSignUpMode ? "Sign Up" : "Sign In";
+            document.getElementById('nameFieldGroup').style.display = isSignUpMode ? "block" : "none";
+            document.getElementById('authToggleText').innerText = isSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            currentUser = isSignUpMode ? document.getElementById('authName').value : email.split('@')[0];
+            
+            document.getElementById('auth-form-container').style.display = "none";
+            document.getElementById('user-profile-container').style.display = "block";
+            document.getElementById('welcomeUser').innerText = `Welcome back, ${currentUser}!`;
+            document.getElementById('nav-account-link').innerText = currentUser;
+            showToast(isSignUpMode ? "Account created successfully!" : "Signed in successfully!");
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('authForm').reset();
+            document.getElementById('auth-form-container').style.display = "block";
+            document.getElementById('user-profile-container').style.display = "none";
+            document.getElementById('nav-account-link').innerText = "Sign In";
+            showToast("Signed out successfully.");
+        }
+
+        // 7. Cart Drawer Logic
+        function toggleCart() {
+            document.getElementById('cartModal').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const existing = cart.find(item => item.id === id);
+
+            if (existing) existing.qty += 1;
+            else cart.push({ ...product, qty: 1 });
+
+            updateCartUI();
+            showToast(`Added "${product.name}" to cart!`);
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const countEl = document.getElementById('cart-count');
+            const container = document.getElementById('cart-items-container');
+            const totalEl = document.getElementById('cart-total-price');
+
+            countEl.innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 40px;">Your cart is empty.</p>`;
+                totalEl.innerText = '₹0';
+                return;
+            }
+
+            let totalPrice = 0;
+            container.innerHTML = cart.map(item => {
+                totalPrice += item.price * item.qty;
+                return `
+                    <div class="cart-item">
+                        <div>
+                            <h4 style="font-size:13px;">${item.name}</h4>
+                            <p style="font-size:11px; color:var(--text-muted);">₹${item.price} × ${item.qty}</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:13px; font-weight:bold;">₹${item.price * item.qty}</span>
+                            <button class="close-btn" style="color:#c94a4a; font-size:14px;" onclick="removeFromCart(${item.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.innerText = `₹${totalPrice}`;
+        }
+
+        function checkout() {
+            if (cart.length === 0) { alert("Your cart is empty!"); return; }
+            alert("Order placed successfully! Thank you for supporting small artisans. 🏺✨");
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Initialize Home View on Load
+        renderFeatured();
+    </script>
+</body>
+</html>
