@@ -641,6 +641,12 @@
         let isSignUpMode = true;    // the page opens in Sign Up mode
         let currentUser = null;     // the logged-in user (null = nobody logged in)
 
+        // Picture shown when an image link is dead or broken
+        const FALLBACK_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">' +
+            '<rect width="600" height="600" fill="#ebe4da"/>' +
+            '<text x="300" y="340" font-size="140" text-anchor="middle">🏺</text></svg>');
+
         // Small helper: stops users from typing HTML/script into product names
         function safe(text) {
             return String(text ?? '')
@@ -740,7 +746,7 @@
             return `
                 <div class="product-card">
                     <div class="product-img-container">
-                        <img src="${safe(p.image)}" alt="${safe(p.name)}" class="product-img" loading="lazy">
+                        <img src="${safe(p.image)}" alt="${safe(p.name)}" class="product-img" loading="lazy" onerror="this.onerror=null; this.src=FALLBACK_IMG">
                     </div>
                     <div class="product-info">
                         <div>
