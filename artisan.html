@@ -859,7 +859,15 @@
         // Log in with email + password
         async function signIn(email, password) {
             const { error } = await db.auth.signInWithPassword({ email, password });
-            if (error) { showToast("Sign in failed: " + error.message); return; }
+            if (error) {
+                // Supabase says "Email not confirmed" when "Confirm email" is turned on in the dashboard
+                if (error.message.toLowerCase().includes("not confirmed")) {
+                    showToast("Please confirm your email first (check your inbox).");
+                } else {
+                    showToast("Sign in failed: " + error.message);
+                }
+                return;
+            }
             showToast("Signed in successfully!");
             await showLoggedInState();
         }
