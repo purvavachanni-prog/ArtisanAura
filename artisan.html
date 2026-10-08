@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArtisanAura | Handmade Products Marketplace</title>
+    <!-- Supabase library: lets our page talk to the database -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <style>
         /* ==========================================
            1. CSS VARIABLES & GLOBAL STYLING
@@ -453,7 +455,7 @@
     <!-- ==========================================
        1. HOME PAGE VIEW
     ========================================== -->
-    <div id="home-page" class="page active">
+    <div id="home-page" class="page">
         <div class="hero-section">
             <p class="welcome-tag">Handmade with Heritage & Soul</p>
             <h1>Discover Unique Artisanal Treasures</h1>
@@ -561,15 +563,15 @@
     <!-- ==========================================
        5. USER ACCOUNT VIEW (Sign In / Sign Up)
     ========================================== -->
-    <div id="account-page" class="page">
+    <div id="account-page" class="page active">
         <h2 class="section-title" style="text-align: center;">User Account Portal</h2>
         <div class="account-content" style="max-width: 450px;">
             <div id="auth-form-container">
-                <h3 id="auth-title" style="margin-bottom: 20px; text-align: center;">Sign In to ArtisanAura</h3>
+                <h3 id="auth-title" style="margin-bottom: 20px; text-align: center;">Create an Account</h3>
                 <form id="authForm" onsubmit="handleAuthSubmit(event)">
-                    <div class="form-group" id="nameFieldGroup" style="display: none;">
+                    <div class="form-group" id="nameFieldGroup">
                         <label>Full Name</label>
-                        <input type="text" id="authName" placeholder="Enter your name">
+                        <input type="text" id="authName" placeholder="Enter your name" required>
                     </div>
                     <div class="form-group">
                         <label>Email Address</label>
@@ -577,17 +579,20 @@
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="authPassword" placeholder="••••••••" required>
+                        <input type="password" id="authPassword" placeholder="At least 6 characters" minlength="6" required>
                     </div>
-                    <button type="submit" class="cta-button" id="authSubmitBtn" style="width: 100%; margin-bottom: 12px;">Sign In</button>
+                    <button type="submit" class="cta-button" id="authSubmitBtn" style="width: 100%; margin-bottom: 12px;">Sign Up</button>
                     <p style="text-align: center; font-size: 13px; color: var(--text-muted); cursor: pointer;" onclick="toggleAuthMode()">
-                        <span id="authToggleText">Don't have an account? Sign Up</span>
+                        <span id="authToggleText">Already have an account? Sign In</span>
                     </p>
+                    <button type="button" class="cta-button" onclick="loginDemo()" style="width: 100%; background-color: #8a7a6a; margin-top: 8px;">⚡ Quick Entry: Use Demo Account</button>
                 </form>
             </div>
             <div id="user-profile-container" style="display: none; text-align: center;">
                 <h3 id="welcomeUser" style="margin-bottom: 15px;"></h3>
                 <p style="color: var(--text-muted); margin-bottom: 20px;">You are successfully logged into your ArtisanAura buyer profile.</p>
+                <h4 style="margin-bottom: 10px;">My Orders</h4>
+                <div id="my-orders" style="text-align: left; font-size: 13px; margin-bottom: 20px;"></div>
                 <button class="cta-button" onclick="handleLogout()" style="background-color: #c94a4a;">Sign Out</button>
             </div>
         </div>
@@ -621,43 +626,64 @@
        JAVASCRIPT LOGIC & EXPLAINABLE FUNCTIONS
     ========================================== -->
     <script>
-        // Initial 16 Marketplace Products Database
-        let products = [
-            { id: 1, name: "Terracotta Planter", category: "Pots & Ceramics", price: 650, desc: "Hand-thrown clay pot with geometric earthy carving.", image: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80" },
-            { id: 2, name: "Glazed Ceramic Mug", category: "Pots & Ceramics", price: 450, desc: "Matte beige coffee mug with comfortable ergonomic grip.", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80" },
-            { id: 3, name: "Hand-Painted Vase", category: "Pots & Ceramics", price: 1200, desc: "Statement decorative ceramic vase painted by local artisans.", image: "https://images.unsplash.com/photo-1612196808214-b8e1a6145a5c?auto=format&fit=crop&w=600&q=80" },
-            { id: 4, name: "Stoneware Dinner Set", category: "Pots & Ceramics", price: 1800, desc: "Set of 4 speckled dinner plates fired at high heat.", image: "https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=600&q=80" },
-            { id: 5, name: "Minimalist Stoneware Bowl", category: "Pots & Ceramics", price: 550, desc: "Ideal for soups, ramen, or morning cereal bowls.", image: "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=600&q=80" },
-            
-            { id: 6, name: "Brass Drop Earrings", category: "Jewelry", price: 890, desc: "Hand-hammered brass geometric drop earrings.", image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80" },
-            { id: 7, name: "Beaded Boho Necklace", category: "Jewelry", price: 750, desc: "Natural gemstone beads crafted on durable silk cord.", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80" },
-            { id: 8, name: "Silver Hammered Ring", category: "Jewelry", price: 1100, desc: "Adjustable sterling silver band with unique texture.", image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=600&q=80" },
-            { id: 9, name: "Fabric Wrapped Bangle", category: "Jewelry", price: 350, desc: "Eco-friendly fabric-wrapped statement bracelet.", image: "https://images.unsplash.com/photo-1611591475249-1ef017122a27?auto=format&fit=crop&w=600&q=80" },
+        // =====================================================
+        // STEP 1: CONNECT TO SUPABASE (our online database)
+        // The URL and the public key are safe to keep in the page.
+        // =====================================================
+        const SUPABASE_URL = "https://ktqsovjrukbpnunztzkv.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_wc3_ETSMUgdY5lQsWxKubg_LBz5yksY";
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            { id: 10, name: "Macrame Wall Hanging", category: "Home Decor", price: 1400, desc: "Intricate cotton cord wall tapestry for cozy vibes.", image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=600&q=80" },
-            { id: 11, name: "Soy Wax Scented Candle", category: "Home Decor", price: 600, desc: "Hand-poured vanilla and sandalwood soy candle.", image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80" },
-            { id: 12, name: "Rattan Woven Basket", category: "Home Decor", price: 1350, desc: "Sustainable natural wicker storage basket.", image: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=600&q=80" },
-            { id: 13, name: "Wooden Carved Coasters", category: "Home Decor", price: 490, desc: "Set of 6 rustic mango wood coasters with holder.", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80" },
-
-            { id: 14, name: "Block Print Table Runner", category: "Textiles", price: 950, desc: "Hand-carved wooden block print on organic cotton.", image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=80" },
-            { id: 15, name: "Hand-knitted Throw Blanket", category: "Textiles", price: 2400, desc: "Chunky knit woolen blanket for chilly evenings.", image: "https://images.unsplash.com/photo-1580301762415-e0e3c6d28994?auto=format&fit=crop&w=600&q=80" },
-            { id: 16, name: "Embroidered Linen Cushion", category: "Textiles", price: 800, desc: "Hand-stitched botanical floral embroidery.", image: "https://images.unsplash.com/photo-1579656381226-5fc0f0100c3b?auto=format&fit=crop&w=600&q=80" }
-        ];
-
-        let cart = [];
+        // Variables that hold the state of the website
+        let products = [];          // filled from the database (no more hardcoded list)
+        let cart = [];              // items the user added (kept in the browser until checkout)
         let activeCategory = 'All';
-        let isSignUpMode = false;
-        let currentUser = null;
+        let isSignUpMode = true;    // the page opens in Sign Up mode
+        let currentUser = null;     // the logged-in user (null = nobody logged in)
 
-        // 1. Page Switcher Function (DOM manipulation)
+        // Small helper: stops users from typing HTML/script into product names
+        function safe(text) {
+            return String(text ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // =====================================================
+        // STEP 2: LOAD PRODUCTS FROM THE DATABASE
+        // Same as: SELECT * FROM products ORDER BY id
+        // =====================================================
+        async function loadProducts() {
+            const { data, error } = await db.from('products').select('*').order('id');
+            if (error) { showToast("Could not load products"); return; }
+
+            // Database column names -> names our page already uses
+            products = data.map(row => ({
+                id: row.id,
+                name: row.name,
+                category: row.category,
+                price: row.price,
+                desc: row.description,
+                image: row.image,
+                artisan: row.artisan_name
+            }));
+        }
+
+        // =====================================================
+        // STEP 3: PAGE SWITCHER
+        // If nobody is logged in, only the account page is allowed.
+        // =====================================================
         function switchPage(pageId) {
+            if (!currentUser && pageId !== 'account' && pageId !== 'policy') {
+                showToast("Please sign up or sign in first");
+                pageId = 'account';
+            }
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             if (pageId === 'home') {
                 document.getElementById('home-page').classList.add('active');
                 renderFeatured();
             } else if (pageId === 'shop') {
                 document.getElementById('shop-page').classList.add('active');
-                renderMarketplace(products);
+                applyFiltersAndSort();
             } else if (pageId === 'register') {
                 document.getElementById('register-page').classList.add('active');
             } else if (pageId === 'policy') {
@@ -668,31 +694,29 @@
             window.scrollTo(0, 0);
         }
 
-        // 2. Render Featured Items on Home Page
+        // Show the first 4 products on the home page
         function renderFeatured() {
             const grid = document.getElementById('featured-grid');
             grid.innerHTML = products.slice(0, 4).map(p => createCardHTML(p)).join('');
         }
 
-        // 3. Render Marketplace Divided into Sections by Category
+        // Show products grouped by category
         function renderMarketplace(items) {
             const container = document.getElementById('market-content');
-            
+
             if (items.length === 0) {
                 container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding: 40px;">No handmade creations found.</p>`;
                 return;
             }
 
             if (activeCategory !== 'All') {
-                // If a specific category filter is clicked
                 container.innerHTML = `
-                    <h3 class="category-group-title">${activeCategory}</h3>
+                    <h3 class="category-group-title">${safe(activeCategory)}</h3>
                     <div class="products-grid">${items.map(p => createCardHTML(p)).join('')}</div>
                 `;
                 return;
             }
 
-            // Otherwise, divide into multiple categorized sections
             const categories = ["Pots & Ceramics", "Jewelry", "Home Decor", "Textiles"];
             let htmlContent = "";
 
@@ -711,17 +735,19 @@
             container.innerHTML = htmlContent;
         }
 
+        // Build the HTML of one product card
         function createCardHTML(p) {
             return `
                 <div class="product-card">
                     <div class="product-img-container">
-                        <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+                        <img src="${safe(p.image)}" alt="${safe(p.name)}" class="product-img" loading="lazy">
                     </div>
                     <div class="product-info">
                         <div>
-                            <span class="product-category">${p.category}</span>
-                            <h3 class="product-title">${p.name}</h3>
-                            <p class="product-desc">${p.desc}</p>
+                            <span class="product-category">${safe(p.category)}</span>
+                            <h3 class="product-title">${safe(p.name)}</h3>
+                            <p style="font-size:11px; color:var(--text-muted);">by ${safe(p.artisan)}</p>
+                            <p class="product-desc">${safe(p.desc)}</p>
                         </div>
                         <div class="product-footer">
                             <span class="product-price">₹${p.price}</span>
@@ -732,7 +758,9 @@
             `;
         }
 
-        // 4. Filtering, Searching, and Sorting Logic
+        // =====================================================
+        // STEP 4: FILTER, SEARCH AND SORT (done in the browser)
+        // =====================================================
         function filterCategory(category, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -747,12 +775,12 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const sortVal = document.getElementById('sortSelect').value;
 
-            let result = activeCategory === 'All' 
-                ? [...products] 
+            let result = activeCategory === 'All'
+                ? [...products]
                 : products.filter(p => p.category === activeCategory);
 
             if (query) {
-                result = result.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+                result = result.filter(p => p.name.toLowerCase().includes(query) || (p.desc || '').toLowerCase().includes(query));
             }
 
             if (sortVal === 'low-high') result.sort((a, b) => a.price - b.price);
@@ -762,55 +790,121 @@
             renderMarketplace(result);
         }
 
-        // 5. Artisan Registration Form Submission handler
-        function handleArtisanSubmit(e) {
+        // =====================================================
+        // STEP 5: ARTISAN FORM -> SAVES A NEW PRODUCT IN THE DATABASE
+        // Same as: INSERT INTO products (...) VALUES (...)
+        // =====================================================
+        async function handleArtisanSubmit(e) {
             e.preventDefault();
+
             const newProduct = {
-                id: products.length + 1,
+                artisan_name: document.getElementById('artisanName').value,
                 name: document.getElementById('prodTitle').value,
                 category: document.getElementById('prodCategory').value,
                 price: Number(document.getElementById('prodPrice').value),
                 image: document.getElementById('prodImg').value,
-                desc: document.getElementById('prodDesc').value
+                description: document.getElementById('prodDesc').value,
+                owner_id: currentUser.id      // remembers who listed it
             };
 
-            products.unshift(newProduct); // Add to beginning of array
+            const { error } = await db.from('products').insert(newProduct);
+            if (error) { showToast("Error: " + error.message); return; }
+
+            await loadProducts();             // reload so the new product appears
             showToast("Product listed successfully!");
             document.getElementById('artisanForm').reset();
             switchPage('shop');
         }
 
-        // 6. User Account Sign-in / Sign-up Handler
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').innerText = isSignUpMode ? "Create an Account" : "Sign In to ArtisanAura";
-            document.getElementById('authSubmitBtn').innerText = isSignUpMode ? "Sign Up" : "Sign In";
-            document.getElementById('nameFieldGroup').style.display = isSignUpMode ? "block" : "none";
-            document.getElementById('authToggleText').innerText = isSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
+        // =====================================================
+        // STEP 6: SIGN UP / SIGN IN / SIGN OUT (Supabase Auth)
+        // =====================================================
+
+        // Switch the form between "Sign Up" and "Sign In"
+        function setAuthMode(signUp) {
+            isSignUpMode = signUp;
+            document.getElementById('auth-title').innerText = signUp ? "Create an Account" : "Sign In to ArtisanAura";
+            document.getElementById('authSubmitBtn').innerText = signUp ? "Sign Up" : "Sign In";
+            document.getElementById('nameFieldGroup').style.display = signUp ? "block" : "none";
+            document.getElementById('authName').required = signUp;
+            document.getElementById('authToggleText').innerText = signUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
         }
 
-        function handleAuthSubmit(e) {
+        function toggleAuthMode() { setAuthMode(!isSignUpMode); }
+
+        // Runs when the form is submitted
+        async function handleAuthSubmit(e) {
             e.preventDefault();
             const email = document.getElementById('authEmail').value;
-            currentUser = isSignUpMode ? document.getElementById('authName').value : email.split('@')[0];
-            
-            document.getElementById('auth-form-container').style.display = "none";
-            document.getElementById('user-profile-container').style.display = "block";
-            document.getElementById('welcomeUser').innerText = `Welcome back, ${currentUser}!`;
-            document.getElementById('nav-account-link').innerText = currentUser;
-            showToast(isSignUpMode ? "Account created successfully!" : "Signed in successfully!");
+            const password = document.getElementById('authPassword').value;
+
+            if (isSignUpMode) {
+                const name = document.getElementById('authName').value;
+                // The name is saved with the user; a database trigger copies it into "profiles"
+                const { data, error } = await db.auth.signUp({ email, password, options: { data: { name } } });
+                if (error) { showToast(error.message); return; }
+                if (!data.session) {
+                    showToast("Account created! Confirm your email, then sign in.");
+                    setAuthMode(false);
+                    return;
+                }
+                showToast("Account created successfully!");
+            } else {
+                await signIn(email, password);
+                return;
+            }
+            await showLoggedInState();
         }
 
-        function handleLogout() {
+        // Log in with email + password
+        async function signIn(email, password) {
+            const { error } = await db.auth.signInWithPassword({ email, password });
+            if (error) { showToast("Sign in failed: " + error.message); return; }
+            showToast("Signed in successfully!");
+            await showLoggedInState();
+        }
+
+        // One-click login with the demo user stored in the database
+        async function loginDemo() {
+            await signIn("demo@artisanaura.com", "demo123");
+        }
+
+        // After login: find the user, show their name, open the home page
+        async function showLoggedInState() {
+            const { data } = await db.auth.getSession();
+            if (!data.session) return;
+            currentUser = data.session.user;
+
+            // Read the user's name from the "profiles" table
+            const { data: profile } = await db.from('profiles').select('name').eq('id', currentUser.id).maybeSingle();
+            const name = profile ? profile.name : currentUser.email;
+
+            document.getElementById('auth-form-container').style.display = "none";
+            document.getElementById('user-profile-container').style.display = "block";
+            document.getElementById('welcomeUser').innerText = `Welcome, ${name}!`;
+            document.getElementById('nav-account-link').innerText = name;
+
+            await loadMyOrders();
+            switchPage('home');
+        }
+
+        async function handleLogout() {
+            await db.auth.signOut();
             currentUser = null;
+            cart = [];
+            updateCartUI();
             document.getElementById('authForm').reset();
             document.getElementById('auth-form-container').style.display = "block";
             document.getElementById('user-profile-container').style.display = "none";
             document.getElementById('nav-account-link').innerText = "Sign In";
+            setAuthMode(true);
             showToast("Signed out successfully.");
+            switchPage('account');
         }
 
-        // 7. Cart Drawer Logic
+        // =====================================================
+        // STEP 7: CART (stays in the browser until checkout)
+        // =====================================================
         function toggleCart() {
             document.getElementById('cartModal').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
@@ -851,7 +945,7 @@
                 return `
                     <div class="cart-item">
                         <div>
-                            <h4 style="font-size:13px;">${item.name}</h4>
+                            <h4 style="font-size:13px;">${safe(item.name)}</h4>
                             <p style="font-size:11px; color:var(--text-muted);">₹${item.price} × ${item.qty}</p>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
@@ -865,12 +959,58 @@
             totalEl.innerText = `₹${totalPrice}`;
         }
 
-        function checkout() {
+        // =====================================================
+        // STEP 8: CHECKOUT -> SAVES AN ORDER IN THE DATABASE
+        // 1) insert one row in "orders"
+        // 2) insert one row per cart item in "order_items"
+        // =====================================================
+        async function checkout() {
             if (cart.length === 0) { alert("Your cart is empty!"); return; }
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+            // 1) Create the order and get back its new id
+            const { data: order, error } = await db.from('orders')
+                .insert({ user_id: currentUser.id, total: total })
+                .select().single();
+            if (error) { alert("Order failed: " + error.message); return; }
+
+            // 2) Save every cart item under that order id
+            const items = cart.map(item => ({
+                order_id: order.id,
+                product_id: item.id,
+                product_name: item.name,
+                price: item.price,
+                qty: item.qty
+            }));
+            const { error: itemsError } = await db.from('order_items').insert(items);
+            if (itemsError) { alert("Order failed: " + itemsError.message); return; }
+
             alert("Order placed successfully! Thank you for supporting small artisans. 🏺✨");
             cart = [];
             updateCartUI();
             toggleCart();
+            await loadMyOrders();
+        }
+
+        // Show the logged-in user's past orders on the account page
+        async function loadMyOrders() {
+            const { data, error } = await db.from('orders')
+                .select('id, total, created_at, order_items(product_name, qty)')
+                .order('created_at', { ascending: false });
+            const box = document.getElementById('my-orders');
+
+            if (error || !data || data.length === 0) {
+                box.innerHTML = `<p style="color:var(--text-muted);">No orders yet.</p>`;
+                return;
+            }
+            box.innerHTML = data.map(o => `
+                <div style="padding:8px 0; border-bottom:1px solid #ddd;">
+                    <strong>Order #${o.id}</strong> - ₹${o.total}
+                    <span style="color:var(--text-muted);">(${new Date(o.created_at).toLocaleDateString()})</span><br>
+                    ${o.order_items.map(i => safe(i.product_name) + ' × ' + i.qty).join(', ')}
+                </div>
+            `).join('');
         }
 
         function showToast(message) {
@@ -880,8 +1020,18 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // Initialize Home View on Load
-        renderFeatured();
+        // =====================================================
+        // STEP 9: START THE APP WHEN THE PAGE OPENS
+        // Load products, then check if the user is already logged in.
+        // If not, the Sign Up page stays in front.
+        // =====================================================
+        async function startApp() {
+            await loadProducts();
+            const { data } = await db.auth.getSession();
+            if (data.session) await showLoggedInState();
+            else switchPage('account');
+        }
+        startApp();
     </script>
 </body>
 </html>
